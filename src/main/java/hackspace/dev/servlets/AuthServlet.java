@@ -16,11 +16,13 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
+import static hackspace.dev.error.ErrorType.INCORRECT_LOGIN_OR_PASS;
 import static hackspace.dev.error.ErrorType.USER_NAME_BUSY;
 import static hackspace.dev.utils.GsonUtils.getGson;
 import static hackspace.dev.utils.GsonUtils.toGson;
 import static hackspace.dev.utils.ResponseHelper.buildErrorResponse;
 import static hackspace.dev.utils.ResponseHelper.buildOkResponse;
+import static hackspace.dev.utils.ResponseHelper.writeResponse;
 
 @WebServlet("/getUser")
 public class AuthServlet extends BaseServlet {
@@ -51,9 +53,15 @@ public class AuthServlet extends BaseServlet {
 
     }
 
-    private void signInUser(JsonElement request, HttpServletResponse resp) {
+    private void signInUser(JsonElement request, HttpServletResponse resp) throws IOException {
         User user = getGson().fromJson(request, User.class);
-        boolean isSignInSuccess = userService.isSignInSuccess(user);
+        User userFromDb = userService.selectUser(user);
+
+        String response;
+        if(userFromDb != null) response = buildOkResponse(toGson(userFromDb));
+        else response = buildErrorResponse(toGson(new ApiError(INCORRECT_LOGIN_OR_PASS)));
+
+        writeResponse(response, resp);
     }
 
     private void signUpUser(JsonElement request, HttpServletResponse resp) throws IOException {
@@ -67,9 +75,7 @@ public class AuthServlet extends BaseServlet {
         if(userNameFree)  response = buildOkResponse(toGson(userService.createUser(user)));
         else response = buildErrorResponse(toGson(new ApiError(USER_NAME_BUSY)));
 
-        System.out.println("Response " + response);
-
-        resp.getWriter().write(response);
+        writeResponse(response, resp);
     }
 
 }

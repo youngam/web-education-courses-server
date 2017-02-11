@@ -52,7 +52,10 @@ public class UserService {
         }
     }
 
-    public boolean isSignInSuccess(User user) {
-        return false;
+    public User selectUser(User user) {
+        String selectUser = String.format(SELECT_USER_BY_NAME_AND_PASS,
+                user.getName(), user.getPassword());
+
+        return readUser(selectUser);
     }
 }
