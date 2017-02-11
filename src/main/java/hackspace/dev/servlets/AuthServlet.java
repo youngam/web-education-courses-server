@@ -1,23 +1,29 @@
 package hackspace.dev.servlets;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import hackspace.dev.api.ApiMethod;
 import hackspace.dev.db.DbHelper;
+import hackspace.dev.error.ApiError;
+import hackspace.dev.pojo.RootRequest;
 import hackspace.dev.pojo.User;
 import hackspace.dev.service.UserService;
-import hackspace.dev.utils.GsonUtils;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
+import static hackspace.dev.error.ErrorType.USER_NAME_BUSY;
+import static hackspace.dev.utils.GsonUtils.getGson;
 import static hackspace.dev.utils.GsonUtils.toGson;
+import static hackspace.dev.utils.ResponseHelper.buildErrorResponse;
+import static hackspace.dev.utils.ResponseHelper.buildOkResponse;
 
 @WebServlet("/getUser")
-public class AuthServlet extends HttpServlet {
+public class AuthServlet extends BaseServlet {
     private final UserService userService = new UserService();
 
     public void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -30,17 +36,37 @@ public class AuthServlet extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        User user = GsonUtils.getGson().fromJson(req.getReader(), User.class);
+    protected void doPost(JsonElement requestJson, HttpServletResponse resp) throws ServletException, IOException {
+        RootRequest request = getGson().fromJson(requestJson, RootRequest.class);
+
+        switch (ApiMethod.getMethod(request.getMethodName())) {
+
+            case SIGN_IN :
+                signInUser(request.getRequestBody(), resp);
+                break;
+            case SIGN_UP:
+                signUpUser(request.getRequestBody(), resp);
+                break;
+        }
+
+    }
+
+    private void signInUser(JsonElement request, HttpServletResponse resp) {
+        User user = getGson().fromJson(request, User.class);
+        boolean isSignInSuccess = userService.isSignInSuccess(user);
+    }
+
+    private void signUpUser(JsonElement request, HttpServletResponse resp) throws IOException {
+        User user = getGson().fromJson(request, User.class);
         System.out.println("user: " + user.getName() + " " + user.getPassword());
 
         boolean userNameFree = userService.isUserNameFree(user.getName());
 
-        User result = null;
-        if(userNameFree)  result = userService.createUser(user);
-        else result = new User(-1, "userName is ", "busy");
+        String response;
 
-        String response = toGson(result);
+        if(userNameFree)  response = buildOkResponse(toGson(userService.createUser(user)));
+        else response = buildErrorResponse(toGson(new ApiError(USER_NAME_BUSY)));
+
         System.out.println("Response " + response);
 
         resp.getWriter().write(response);

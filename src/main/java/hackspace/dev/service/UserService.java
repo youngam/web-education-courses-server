@@ -10,12 +10,15 @@ import java.sql.Statement;
 
 public class UserService {
     private final Connection connection = DbHelper.getInstance().getConnection();
-    public static final String SELECT_USER = "SELECT * FROM users WHERE users.name = ";
+    public static final String SELECT_USER_BY_NAME = "SELECT * FROM users WHERE users.name = '%s'";
+    public static final String SELECT_USER_BY_NAME_AND_PASS =
+            "SELECT * FROM users WHERE users.name = '%s' AND users.password = '%s'";
     public static final String INSERT_USER = "INSERT INTO users(name, password) VALUES('%s', '%s')";
 
 
     public boolean isUserNameFree(String userName) {
-        return readUser(userName) == null;
+        String query = String.format(SELECT_USER_BY_NAME, userName);
+        return readUser(query) == null;
     }
 
     public User createUser(User user) {
@@ -27,14 +30,15 @@ public class UserService {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
-        return readUser(user.getName());
+        String selectUserQuery = String.format(SELECT_USER_BY_NAME, user.getName());
+        return readUser(selectUserQuery);
     }
 
-    private User readUser(String userName) {
+    private User readUser(String query) {
         User user = null;
         try {
             Statement statement = connection.createStatement();
-            String query = String.format("%s \"%s\"", SELECT_USER, userName);
+            System.out.println("query" + query);
             ResultSet rs = statement.executeQuery(query);
             if(rs.first()) {
                 int id = Integer.parseInt(rs.getString(User.ID));
@@ -46,5 +50,9 @@ public class UserService {
             System.out.println("Exception " + e.getMessage());
             throw new RuntimeException(e);
         }
+    }
+
+    public boolean isSignInSuccess(User user) {
+        return false;
     }
 }
