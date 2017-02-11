@@ -5,7 +5,8 @@ package hackspace.dev.api;
  */
 public enum  ApiMethod {
     SIGN_IN("signIn"),
-    SIGN_UP("signUp")
+    SIGN_UP("signUp"),
+    CREATE_LESSON("createLesson")
     ;
 
     private String name;

@@ -22,5 +22,5 @@ public abstract class BaseServlet extends HttpServlet{
         return requestJson;
     }
 
-    protected abstract void doPost(JsonElement req, HttpServletResponse resp) throws ServletException, IOException;
+    protected abstract void doPost(JsonElement requestJson, HttpServletResponse resp) throws ServletException, IOException;
 }

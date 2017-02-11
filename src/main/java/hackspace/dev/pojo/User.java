@@ -5,8 +5,7 @@ import com.google.gson.annotations.SerializedName;
 /**
  * Created by alex on 2/2/17.
  */
-public class User {
-    public static final String ID = "id";
+public class User extends BaseEntity{
     public static final String NAME = "name";
     public static final String PASSWORD = "password";
 
