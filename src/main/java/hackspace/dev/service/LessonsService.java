@@ -17,7 +17,11 @@ import java.util.List;
 public class LessonsService {
     public static final String SELECT_LESSONS = "SELECT * FROM lessons";
     public static final String SELECT_LESSON_BY_TITLE = "SELECT * FROM lessons WHERE lessons.title = '%s'";
+    public static final String SELECT_LESSON_BY_ID = "SELECT * FROM lessons WHERE lessons.id = %d";
     public static final String INSERT_LESSON = "INSERT INTO lessons(title, description) VALUE ('%s', '%s');";
+    public static final String DELETE_LESSON = "DELETE FROM lessons WHERE lessons.id = %d";
+    public static final String UPDATE_LESSON = "UPDATE lessons SET lessons.title = '%s', " +
+            "lessons.description = '%s' WHERE id = %d;";
 
 
     public List<Lesson> readLessons() {
@@ -76,6 +80,35 @@ public class LessonsService {
             throw new RuntimeException(e);
         }
         String selectUserQuery = String.format(SELECT_LESSON_BY_TITLE, lesson.getTitle());
+        return readLesson(selectUserQuery);
+    }
+
+    public boolean deleteLesson(Long lessonId) {
+        Connection connection = DbHelper.getInstance().getConnection();
+
+        try {
+            Statement statement = connection.createStatement();
+            String query = String.format(DELETE_LESSON, lessonId);
+            statement.execute(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+        return true;
+    }
+
+    public Lesson updateLesson(Lesson lesson) {
+        Connection connection = DbHelper.getInstance().getConnection();
+        try {
+            Statement statement = connection.createStatement();
+            String query = String.format(UPDATE_LESSON, lesson.getTitle(), lesson.getDescription(), lesson.getId());
+            statement.execute(query);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+
+        String selectUserQuery = String.format(SELECT_LESSON_BY_ID, lesson.getId());
         return readLesson(selectUserQuery);
     }
 }

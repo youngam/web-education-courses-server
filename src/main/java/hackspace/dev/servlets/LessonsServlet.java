@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import hackspace.dev.api.ApiMethod;
 import hackspace.dev.error.ApiError;
 import hackspace.dev.error.ErrorType;
+import hackspace.dev.pojo.BaseEntity;
 import hackspace.dev.pojo.Lesson;
 import hackspace.dev.pojo.RootRequest;
 import hackspace.dev.service.LessonsService;
@@ -40,7 +41,34 @@ public class LessonsServlet extends BaseServlet {
 
             case CREATE_LESSON:
                 createLesson(request.getRequestBody(), resp);
+                break;
+
+            case DELETE_LESSON:
+                deleteLesson(request.getRequestBody(), resp);
+                break;
+
+            case UPDATE_LESSON:
+                updateLesson(request.getRequestBody(), resp);
+                break;
+
         }
+    }
+
+    private void updateLesson(JsonElement requestBody, HttpServletResponse resp) throws IOException {
+        Lesson lesson = getGson().fromJson(requestBody, Lesson.class);
+        String response = buildOkResponse(lessonsService.updateLesson(lesson));
+        writeResponse(response, resp);
+    }
+
+    private void deleteLesson(JsonElement requestBody, HttpServletResponse resp) throws IOException {
+        Long lessonId = requestBody.getAsJsonObject().get(BaseEntity.ID).getAsLong();
+        boolean successfulDeleted = lessonsService.deleteLesson(lessonId);
+                                            // so lazy to create new object :(
+        String response;
+        if (successfulDeleted)  response = buildOkResponse(requestBody.toString());
+        else response = buildErrorResponse(new ApiError(ErrorType.CAN_NOT_DELETE_LESSON));
+
+        writeResponse(response, resp);
     }
 
     private void createLesson(JsonElement requestBody, HttpServletResponse resp) throws IOException {
