@@ -13,7 +13,7 @@ public class UserService {
     public static final String SELECT_USER_BY_NAME = "SELECT * FROM users WHERE users.name = '%s'";
     public static final String SELECT_USER_BY_NAME_AND_PASS =
             "SELECT * FROM users WHERE users.name = '%s' AND users.password = '%s'";
-    public static final String INSERT_USER = "INSERT INTO users(name, password) VALUES('%s', '%s')";
+    public static final String INSERT_USER = "INSERT INTO users(name, password, userTypeId) VALUES('%s', '%s', '%d')";
 
 
     public boolean isUserNameFree(String userName) {
@@ -24,7 +24,7 @@ public class UserService {
     public User createUser(User user) {
         try {
             Statement statement = connection.createStatement();
-            String query = String.format(INSERT_USER, user.getName(), user.getPassword());
+            String query = String.format(INSERT_USER, user.getName(), user.getPassword(), user.getUserTypeId());
             statement.executeUpdate(query);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -43,7 +43,8 @@ public class UserService {
             if(rs.first()) {
                 int id = Integer.parseInt(rs.getString(User.ID));
                 String name = rs.getString(User.NAME);
-                user = new User(id, name);
+                int userTypeId = Integer.parseInt(rs.getString(User.USER_TYPE_ID));
+                user = new User(id, name, userTypeId);
             }
             return user;
         } catch (SQLException e) {

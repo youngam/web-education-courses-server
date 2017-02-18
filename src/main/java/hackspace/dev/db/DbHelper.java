@@ -48,7 +48,8 @@ public class DbHelper {
             while (rs.next()) {
                 int id = Integer.parseInt(rs.getString(User.ID));
                 String name = rs.getString(User.NAME);
-                users.add(new User(id, name));
+                int userTypeId = Integer.parseInt(rs.getString(User.USER_TYPE_ID));
+                users.add(new User(id, name, userTypeId));
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);

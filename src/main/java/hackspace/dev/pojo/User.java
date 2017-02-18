@@ -8,6 +8,7 @@ import com.google.gson.annotations.SerializedName;
 public class User extends BaseEntity{
     public static final String NAME = "name";
     public static final String PASSWORD = "password";
+    public static final String USER_TYPE_ID = "userTypeId";
 
     private int id;
 
@@ -17,16 +18,24 @@ public class User extends BaseEntity{
     @SerializedName(PASSWORD)
     private String password;
 
-    public User() {}
+    @SerializedName(USER_TYPE_ID)
+    private Integer userTypeId;
 
-    public User(int id, String name) {
-        this(id, name, null);
+    public Integer getUserTypeId() {
+        return userTypeId;
     }
 
-    public User(int id, String name, String password) {
+    public User() {}
+
+    public User(int id, String name, Integer userTypeId) {
+        this(id, name, null, userTypeId);
+    }
+
+    public User(int id, String name, String password, Integer userTypeId) {
         this.id = id;
         this.name = name;
         this.password = password;
+        this.userTypeId = userTypeId;
     }
 
     public String getPassword() {

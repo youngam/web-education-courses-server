@@ -24,18 +24,9 @@ import static hackspace.dev.utils.ResponseHelper.buildErrorResponse;
 import static hackspace.dev.utils.ResponseHelper.buildOkResponse;
 import static hackspace.dev.utils.ResponseHelper.writeResponse;
 
-@WebServlet("/getUser")
+@WebServlet("/auth")
 public class AuthServlet extends BaseServlet {
     private final UserService userService = new UserService();
-
-    public void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws IOException, ServletException {
-
-        List<User> users = DbHelper.getInstance().readUsers();
-        String json = new Gson().toJson(users.get(0));
-        response.setContentType("application/json");
-        response.getWriter().write(json);
-    }
 
     @Override
     protected void doPost(JsonElement requestJson, HttpServletResponse resp) throws ServletException, IOException {
@@ -66,8 +57,6 @@ public class AuthServlet extends BaseServlet {
 
     private void signUpUser(JsonElement request, HttpServletResponse resp) throws IOException {
         User user = getGson().fromJson(request, User.class);
-        System.out.println("user: " + user.getName() + " " + user.getPassword());
-
         boolean userNameFree = userService.isUserNameFree(user.getName());
 
         String response;
