@@ -11,6 +11,7 @@ import java.sql.Statement;
 public class UserService {
     private final Connection connection = DbHelper.getInstance().getConnection();
     public static final String SELECT_USER_BY_NAME = "SELECT * FROM users WHERE users.name = '%s'";
+    public static final String SELECT_USER_BY_ID = "SELECT * FROM users WHERE users.id = '%d'";
     public static final String SELECT_USER_BY_NAME_AND_PASS =
             "SELECT * FROM users WHERE users.name = '%s' AND users.password = '%s'";
     public static final String INSERT_USER = "INSERT INTO users(name, password, userTypeId) VALUES('%s', '%s', '%d')";
@@ -34,7 +35,7 @@ public class UserService {
         return readUser(selectUserQuery);
     }
 
-    private User readUser(String query) {
+    public User readUser(String query) {
         User user = null;
         try {
             Statement statement = connection.createStatement();

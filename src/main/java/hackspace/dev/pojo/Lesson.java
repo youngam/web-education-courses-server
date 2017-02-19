@@ -1,5 +1,7 @@
 package hackspace.dev.pojo;
 
+import sun.java2d.cmm.Profile;
+
 /**
  * Created by alex on 2/2/17.
  */
@@ -7,20 +9,37 @@ public class Lesson extends BaseEntity{
     public static final String TITLE = "title";
     public static final String DESCRIPTION = "description";
     public static final String AUTHOR = "author";
+    public static final String AUTHOR_ID = "authorId";
 
     private int id;
     private String title;
     private String description;
+    private Integer authorId;
+    private User author;
 
-    public Lesson(int id, String title, String description) {
+    public Lesson(int id, String title, String description, Integer authorId) {
+        this(id, title, description, authorId, null);
+    }
+
+    public Lesson(int id, String title, String description, User author) {
+        this(id, title, description, null, author);
+    }
+
+    public Lesson(int id, String title, String description, Integer authorId, User author) {
         this.id = id;
         this.title = title;
         this.description = description;
+        this.authorId = authorId;
+        this.author = author;
     }
 
     public Lesson(String title, String description) {
         this.title = title;
         this.description = description;
+    }
+
+    public Integer getAuthorId() {
+        return authorId;
     }
 
     public String getTitle() {

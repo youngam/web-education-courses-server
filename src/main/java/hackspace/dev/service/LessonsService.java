@@ -11,6 +11,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import static hackspace.dev.service.UserService.SELECT_USER_BY_ID;
+
 /**
  * Created by alex on 2/11/17.
  */
@@ -18,7 +20,7 @@ public class LessonsService {
     public static final String SELECT_LESSONS = "SELECT * FROM lessons";
     public static final String SELECT_LESSON_BY_TITLE = "SELECT * FROM lessons WHERE lessons.title = '%s'";
     public static final String SELECT_LESSON_BY_ID = "SELECT * FROM lessons WHERE lessons.id = %d";
-    public static final String INSERT_LESSON = "INSERT INTO lessons(title, description) VALUE ('%s', '%s');";
+    public static final String INSERT_LESSON = "INSERT INTO lessons(title, description, authorId) VALUE ('%s', '%s', '%d');";
     public static final String DELETE_LESSON = "DELETE FROM lessons WHERE lessons.id = %d";
     public static final String UPDATE_LESSON = "UPDATE lessons SET lessons.title = '%s', " +
             "lessons.description = '%s' WHERE id = %d;";
@@ -65,7 +67,10 @@ public class LessonsService {
         int id = Integer.parseInt(rs.getString(User.ID));
         String title = rs.getString(Lesson.TITLE);
         String description = rs.getString(Lesson.DESCRIPTION);
-        return new Lesson(id, title, description);
+        Integer authorId = Integer.valueOf(rs.getString(Lesson.AUTHOR_ID));
+
+        User author = new UserService().readUser(String.format(SELECT_USER_BY_ID, authorId));
+        return new Lesson(id, title, description, author);
     }
 
     public Lesson createLesson(Lesson lesson) {
@@ -73,7 +78,7 @@ public class LessonsService {
 
         try {
             Statement statement = connection.createStatement();
-            String query = String.format(INSERT_LESSON, lesson.getTitle(), lesson.getDescription());
+            String query = String.format(INSERT_LESSON, lesson.getTitle(), lesson.getDescription(), lesson.getAuthorId());
             statement.executeUpdate(query);
         } catch (SQLException e) {
             e.printStackTrace();
