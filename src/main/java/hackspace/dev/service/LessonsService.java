@@ -68,7 +68,7 @@ public class LessonsService {
         String description = rs.getString(Lesson.DESCRIPTION);
         Integer authorId = Integer.valueOf(rs.getString(Lesson.AUTHOR_ID));
 
-        User author = new UserService().readUser(String.format(SELECT_USER_BY_ID, authorId));
+        User author = null/*new UserService().readUser(String.format(SELECT_USER_BY_ID, authorId))*/;
         return new Lesson(id, title, description, author);
     }
 

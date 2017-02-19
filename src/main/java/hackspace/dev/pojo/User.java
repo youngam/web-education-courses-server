@@ -25,6 +25,22 @@ public class User extends BaseEntity{
         return userTypeId;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setUserTypeId(Integer userTypeId) {
+        this.userTypeId = userTypeId;
+    }
+
     public User() {}
 
     public User(int id, String name, Integer userTypeId) {
@@ -68,5 +84,15 @@ public class User extends BaseEntity{
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (password != null ? password.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", password='" + password + '\'' +
+                ", userTypeId=" + userTypeId +
+                '}';
     }
 }

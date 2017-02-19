@@ -2,6 +2,9 @@ package hackspace.dev.db;
 
 import com.mysql.jdbc.Driver;
 import hackspace.dev.pojo.User;
+import hackspace.dev.utils.HibernateUtils;
+import org.hibernate.Query;
+import org.hibernate.Session;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -41,19 +44,6 @@ public class DbHelper {
     }
 
     public List<User> readUsers() {
-        List<User> users = new ArrayList<>();
-        try {
-            Statement statement = getConnection().createStatement();
-            ResultSet rs = statement.executeQuery(SELECT_USERS);
-            while (rs.next()) {
-                int id = Integer.parseInt(rs.getString(User.ID));
-                String name = rs.getString(User.NAME);
-                int userTypeId = Integer.parseInt(rs.getString(User.USER_TYPE_ID));
-                users.add(new User(id, name, userTypeId));
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return users;
+        return HibernateHelper.selectEntities("from User", User.class);
     }
 }
