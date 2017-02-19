@@ -39,7 +39,6 @@ public class UserService {
         User user = null;
         try {
             Statement statement = connection.createStatement();
-            System.out.println("query" + query);
             ResultSet rs = statement.executeQuery(query);
             if(rs.first()) {
                 int id = Integer.parseInt(rs.getString(User.ID));
