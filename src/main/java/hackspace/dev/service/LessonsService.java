@@ -1,118 +1,78 @@
 package hackspace.dev.service;
 
 import hackspace.dev.db.DbHelper;
+import hackspace.dev.db.HibernateHelper;
 import hackspace.dev.pojo.Lesson;
 import hackspace.dev.pojo.User;
+import org.hibernate.Query;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.List;
 
-import static hackspace.dev.service.UserService.SELECT_USER_BY_ID;
+import static hackspace.dev.db.HibernateHelper.createQuery;
+import static hackspace.dev.db.HibernateHelper.getEntity;
+import static hackspace.dev.db.HibernateHelper.updateEntity;
+import static hackspace.dev.pojo.Lesson.LESSON;
+import static hackspace.dev.pojo.Lesson.TITLE;
 
 /**
  * Created by alex on 2/11/17.
  */
 public class LessonsService {
-    public static final String SELECT_LESSONS = "SELECT * FROM lessons";
-    public static final String SELECT_LESSON_BY_TITLE = "SELECT * FROM lessons WHERE lessons.title = '%s'";
-    public static final String SELECT_LESSON_BY_ID = "SELECT * FROM lessons WHERE lessons.id = %d";
-    public static final String INSERT_LESSON = "INSERT INTO lessons(title, description, authorId) VALUE ('%s', '%s', '%d');";
+    public static final String SELECT_LESSONS = "FROM " + LESSON;
+    public static final String SELECT_LESSON_BY_TITLE = String.format("FROM %s WHERE title = :%s", LESSON, TITLE);
+    /*public static final String INSERT_LESSON = "INSERT INTO lessons(title, description, authorId) VALUE ('%s', '%s', '%d');";
     public static final String DELETE_LESSON = "DELETE FROM lessons WHERE lessons.id = %d";
     public static final String UPDATE_LESSON = "UPDATE lessons SET lessons.title = '%s', " +
-            "lessons.description = '%s' WHERE id = %d;";
+            "lessons.description = '%s' WHERE id = %d;";*/
 
+    private final UserService userService = new UserService();
 
     public List<Lesson> readLessons() {
-        List<Lesson> lessons = new ArrayList<>();
-        Connection connection = DbHelper.getInstance().getConnection();
-        try {
-            Statement statement = connection.createStatement();
-            ResultSet rs = statement.executeQuery(SELECT_LESSONS);
-            while (rs.next()) {
-                lessons.add(getLesson(rs));
-            }
+        List<Lesson> lessons = HibernateHelper.selectEntities(SELECT_LESSONS, Lesson.class);
 
-            return lessons;
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        //TODO remove after investigating map entities between tables
+        for (Lesson lesson : lessons) {
+            addAuthor(lesson);
         }
+
+        return lessons;
+    }
+
+    private void addAuthor(Lesson lesson) {
+        User author = userService.getUser(lesson.getAuthorId());
+        lesson.setAuthor(author);
     }
 
     public boolean lessonTitleFree(String title) {
-        return readLesson(String.format(SELECT_LESSON_BY_TITLE, title)) == null;
+        Query query = createQuery(SELECT_LESSON_BY_TITLE)
+                    .setParameter(TITLE, title);
+
+        return readLesson(query) == null;
     }
 
-    private Lesson readLesson(String query) {
-        Connection connection = DbHelper.getInstance().getConnection();
-        Lesson lesson = null;
-        try {
-            Statement statement = connection.createStatement();
-            ResultSet rs = statement.executeQuery(query);
-            if (rs.first()) {
-                lesson = getLesson(rs);
-            }
-            return lesson;
-        } catch (SQLException e) {
-            System.out.println("Exception " + e.getMessage());
-            throw new RuntimeException(e);
-        }
-    }
-
-    private Lesson getLesson(ResultSet rs) throws SQLException {
-        int id = Integer.parseInt(rs.getString(User.ID));
-        String title = rs.getString(Lesson.TITLE);
-        String description = rs.getString(Lesson.DESCRIPTION);
-        Integer authorId = Integer.valueOf(rs.getString(Lesson.AUTHOR_ID));
-
-        User author = null/*new UserService().readUser(String.format(SELECT_USER_BY_ID, authorId))*/;
-        return new Lesson(id, title, description, author);
+    private Lesson readLesson(Query query) {
+        return (Lesson) query.uniqueResult();
     }
 
     public Lesson createLesson(Lesson lesson) {
-        Connection connection = DbHelper.getInstance().getConnection();
+        HibernateHelper.saveEntity(lesson);
 
-        try {
-            Statement statement = connection.createStatement();
-            String query = String.format(INSERT_LESSON, lesson.getTitle(), lesson.getDescription(), lesson.getAuthorId());
-            statement.executeUpdate(query);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
-        String selectUserQuery = String.format(SELECT_LESSON_BY_TITLE, lesson.getTitle());
-        return readLesson(selectUserQuery);
+        Query query = createQuery(SELECT_LESSON_BY_TITLE)
+                        .setParameter(TITLE, lesson.getTitle());
+        return readLesson(query);
     }
 
-    public boolean deleteLesson(Long lessonId) {
-        Connection connection = DbHelper.getInstance().getConnection();
-
-        try {
-            Statement statement = connection.createStatement();
-            String query = String.format(DELETE_LESSON, lessonId);
-            statement.execute(query);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
+    public boolean deleteLesson(Integer lessonId) {
+        HibernateHelper.deleteEntity(Lesson.class, lessonId);
         return true;
     }
 
     public Lesson updateLesson(Lesson lesson) {
-        Connection connection = DbHelper.getInstance().getConnection();
-        try {
-            Statement statement = connection.createStatement();
-            String query = String.format(UPDATE_LESSON, lesson.getTitle(), lesson.getDescription(), lesson.getId());
-            statement.execute(query);
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
-
-        String selectUserQuery = String.format(SELECT_LESSON_BY_ID, lesson.getId());
-        return readLesson(selectUserQuery);
+        updateEntity(lesson);
+        return getEntity(Lesson.class, lesson.getId());
     }
 }

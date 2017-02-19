@@ -30,7 +30,7 @@ public final class HibernateHelper {
         return list;
     }
 
-    public static <T extends BaseEntity> void updateEntity(String updateQuery, T entity) {
+    public static <T extends BaseEntity> void updateEntity(T entity) {
         Session session = getInitedSession();
         session.update(entity);
         commitCloseSession(session);
@@ -39,6 +39,12 @@ public final class HibernateHelper {
     public static void deleteEntity(Object entity) {
         Session session = getInitedSession();
         session.delete(entity);
+        commitCloseSession(session);
+    }
+
+    public static void deleteEntity(Class clazz, Integer id) {
+        Session session = getInitedSession();
+        session.delete(session.get(clazz, id));
         commitCloseSession(session);
     }
 

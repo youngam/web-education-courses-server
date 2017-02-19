@@ -61,7 +61,7 @@ public class LessonsServlet extends BaseServlet {
     }
 
     private void deleteLesson(JsonElement requestBody, HttpServletResponse resp) throws IOException {
-        Long lessonId = requestBody.getAsJsonObject().get(BaseEntity.ID).getAsLong();
+        Integer lessonId = requestBody.getAsJsonObject().get(BaseEntity.ID).getAsInt();
         boolean successfulDeleted = lessonsService.deleteLesson(lessonId);
                                             // so lazy to create new object :(
         String response;

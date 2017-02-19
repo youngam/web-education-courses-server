@@ -13,5 +13,6 @@
         <property name="show_sql">true</property>
 
         <mapping resource="hackspace.dev/User.hbm.xml"/>
+        <mapping resource="hackspace.dev/Lesson.hbm.xml"/>
     </session-factory>
 </hibernate-configuration>
