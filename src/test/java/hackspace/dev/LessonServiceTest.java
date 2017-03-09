@@ -9,7 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class LessonServiceTest {
-    private final LessonsService lessonsService = new LessonsService();
+    private final LessonsService lessonsService = LessonsService.getInstance();
 
     @Test
     public void testReadLessons() {
@@ -17,16 +17,6 @@ public class LessonServiceTest {
         for (Lesson lesson : lessonsService.readLessons()) {
             System.out.println(lesson);
         }
-    }
-
-    @Before
-    void setUp() {
-
-    }
-
-    @After
-    void tearDown() {
-
     }
 
     @Test

@@ -1,67 +1,57 @@
 package hackspace.dev.db;
 
 import hackspace.dev.pojo.BaseEntity;
-import hackspace.dev.utils.HibernateUtils;
-import org.hibernate.Query;
-import org.hibernate.Session;
 
+import javax.persistence.*;
 import java.util.List;
-
-import static hackspace.dev.utils.HibernateUtils.commitCloseSession;
-import static hackspace.dev.utils.HibernateUtils.getInitedSession;
 
 /**
  * Created by alex on 2/19/17.
  */
 public final class HibernateHelper {
+
+    @PersistenceContext
+    public static EntityManager manager =
+            Persistence.createEntityManagerFactory("COLIBRI").createEntityManager();
     private HibernateHelper() {}
 
     public static void saveEntity(Object object) {
-        Session session = getInitedSession();
-        session.save(object);
-        HibernateUtils.commitCloseSession(session);
+        execute(() -> manager.persist(object));
     }
 
     public static <T extends BaseEntity> List<T> selectEntities(String selectQuery, Class<T> clazz) {
-        Session session = getInitedSession();
-        Query query = session.createQuery(selectQuery);
-        List list = query.list();
-        commitCloseSession(session);
-        return list;
+        TypedQuery<T> query = manager.createQuery(selectQuery, clazz);
+        return query.getResultList();
     }
 
     public static <T extends BaseEntity> void updateEntity(T entity) {
-        Session session = getInitedSession();
-        session.update(entity);
-        commitCloseSession(session);
+        execute(() -> manager.merge(entity));
     }
 
-    public static void deleteEntity(Object entity) {
-        Session session = getInitedSession();
-        session.delete(entity);
-        commitCloseSession(session);
+    public static void deleteEntity(final Object entity) {
+        execute(() -> manager.remove(entity));
     }
 
-    public static void deleteEntity(Class clazz, Integer id) {
-        Session session = getInitedSession();
-        session.delete(session.get(clazz, id));
-        commitCloseSession(session);
+    private static void execute(Runnable runnable) {
+        manager.getTransaction().begin();
+        runnable.run();
+        manager.getTransaction().commit();
+    }
+
+    public static <T extends BaseEntity> void  deleteEntity(Class<T> clazz, Integer id) {
+        deleteEntity(getEntity(clazz, id));
     }
 
     public static <T extends BaseEntity> T getEntity(Class<T> clazz, int id) {
-        Session session = getInitedSession();
-        T entity  = (T)session.get(clazz, id);
-        commitCloseSession(session);
-        return entity;
+        return manager.find(clazz, id);
     }
 
     public static <T extends BaseEntity> T getEntity(Class<T> clazz, Query dbQuery) {
-        T result = (T) dbQuery.uniqueResult();
+        T result = (T) dbQuery.getSingleResult();
         return result;
     }
 
     public static Query createQuery(String query) {
-        Session initedSession = getInitedSession();
-        return initedSession.createQuery(query);
+        return manager.createQuery(query);
     }
 }

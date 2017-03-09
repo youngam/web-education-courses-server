@@ -1,10 +1,8 @@
 package hackspace.dev.servlets;
 
-import hackspace.dev.db.DbHelper;
+import hackspace.dev.db.HibernateHelper;
 import hackspace.dev.pojo.User;
 import hackspace.dev.utils.GsonUtils;
-import hackspace.dev.utils.HibernateUtils;
-import org.hibernate.Session;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -20,14 +18,7 @@ public class TestServlet extends HttpServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException {
 
-        Session session = HibernateUtils.getSessionFactory().openSession();
-
-        session.beginTransaction();
-        User user = new User(20, "User", "Popovich", 1);
-        session.update(user);
-        session.getTransaction().commit();
-
-        List<User> users = DbHelper.getInstance().readUsers();
+        List<User> users = HibernateHelper.selectEntities("from User", User.class);
         response.getWriter().write(GsonUtils.toGson(users));
     }
 }

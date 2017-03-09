@@ -2,22 +2,37 @@ package hackspace.dev.pojo;
 
 import com.google.gson.annotations.SerializedName;
 
+import javax.persistence.*;
+
 /**
  * Created by alex on 2/2/17.
  */
+
+
+@Entity
+@Table(name = User.USER)
+@Inheritance(strategy=InheritanceType.TABLE_PER_CLASS)
+@NamedQuery(name = User.SELECT_ALL_USERS, query = "SELECT c from User c")
 public class User extends BaseEntity{
+    public static final String USER = "user";
+    public static final String SELECT_ALL_USERS = "User.getAll";
     public static final String NAME = "name";
     public static final String PASSWORD = "password";
     public static final String USER_TYPE_ID = "userTypeId";
 
-    private int id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Integer id;
 
+    @Column(name = NAME)
     @SerializedName(NAME)
     private String name;
 
+    @Column(name = PASSWORD)
     @SerializedName(PASSWORD)
     private String password;
 
+    @Column(name = USER_TYPE_ID)
     @SerializedName(USER_TYPE_ID)
     private Integer userTypeId;
 
@@ -47,7 +62,7 @@ public class User extends BaseEntity{
         this(id, name, null, userTypeId);
     }
 
-    public User(int id, String name, String password, Integer userTypeId) {
+    public User(Integer id, String name, String password, Integer userTypeId) {
         this.id = id;
         this.name = name;
         this.password = password;

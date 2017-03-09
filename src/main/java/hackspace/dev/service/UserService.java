@@ -1,21 +1,15 @@
 package hackspace.dev.service;
 
-import hackspace.dev.db.DbHelper;
 import hackspace.dev.db.HibernateHelper;
 import hackspace.dev.pojo.User;
-import hackspace.dev.utils.HibernateUtils;
-import org.hibernate.Query;
-import org.hibernate.Session;
 
+import javax.persistence.Query;
 import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 
 import static hackspace.dev.db.HibernateHelper.createQuery;
 
 public class UserService {
-    private final Connection connection = DbHelper.getInstance().getConnection();
+    public static UserService sInstance;
     public static final String SELECT_USER_BY_ID = "SELECT * FROM users WHERE users.id = '%d'";
 
     public static final String SELECT_USER_BY_NAME = String.format("FROM User WHERE name = :%s",
@@ -27,6 +21,14 @@ public class UserService {
 
     public static final String INSERT_USER = "INSERT INTO users(name, password, userTypeId) VALUES('%s', '%s', '%d')";
 
+
+
+    private UserService() {}
+
+    public static UserService getInstance() {
+        if(sInstance == null) sInstance = new UserService();
+        return sInstance;
+    }
 
     public boolean isUserNameFree(String userName) {
         Query query = createQuery(SELECT_USER_BY_NAME)
@@ -45,7 +47,7 @@ public class UserService {
     }
 
     public User readUser(Query query) {
-        return (User) query.uniqueResult();
+        return query.getResultList().isEmpty() ? null : (User) query.getResultList().get(0);
 
     }
 

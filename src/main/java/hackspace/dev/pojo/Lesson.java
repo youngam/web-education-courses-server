@@ -1,8 +1,14 @@
 package hackspace.dev.pojo;
 
+import javax.persistence.*;
+
 /**
  * Created by alex on 2/2/17.
  */
+
+@Entity
+@Table(name = Lesson.LESSON)
+@Inheritance(strategy=InheritanceType.TABLE_PER_CLASS)
 public class Lesson extends BaseEntity{
     public static final String LESSON = "Lesson";
 
@@ -11,10 +17,21 @@ public class Lesson extends BaseEntity{
     public static final String AUTHOR = "author";
     public static final String AUTHOR_ID = "authorId";
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private int id;
+
+    @Column(name = TITLE)
     private String title;
+
+    @Column(name = DESCRIPTION)
     private String description;
+
+    @Transient
     private Integer authorId;
+
+    @OneToOne (cascade=CascadeType.ALL)
+    @JoinColumn(name=AUTHOR_ID, unique = false)
     private User author;
 
     public Lesson(int id, String title, String description, Integer authorId) {

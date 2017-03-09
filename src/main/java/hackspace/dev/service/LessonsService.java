@@ -1,15 +1,10 @@
 package hackspace.dev.service;
 
-import hackspace.dev.db.DbHelper;
 import hackspace.dev.db.HibernateHelper;
 import hackspace.dev.pojo.Lesson;
 import hackspace.dev.pojo.User;
-import org.hibernate.Query;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import javax.persistence.Query;
 import java.util.List;
 
 import static hackspace.dev.db.HibernateHelper.createQuery;
@@ -21,24 +16,22 @@ import static hackspace.dev.pojo.Lesson.TITLE;
 /**
  * Created by alex on 2/11/17.
  */
-public class LessonsService {
+public class LessonsService implements ILessonsProvider{
     public static final String SELECT_LESSONS = "FROM " + LESSON;
     public static final String SELECT_LESSON_BY_TITLE = String.format("FROM %s WHERE title = :%s", LESSON, TITLE);
-    /*public static final String INSERT_LESSON = "INSERT INTO lessons(title, description, authorId) VALUE ('%s', '%s', '%d');";
-    public static final String DELETE_LESSON = "DELETE FROM lessons WHERE lessons.id = %d";
-    public static final String UPDATE_LESSON = "UPDATE lessons SET lessons.title = '%s', " +
-            "lessons.description = '%s' WHERE id = %d;";*/
+    public static LessonsService sInstance;
 
-    private final UserService userService = new UserService();
+    private final UserService userService = UserService.getInstance();
+
+    private LessonsService() {}
+
+    public static LessonsService getInstance() {
+        if(sInstance == null) sInstance = new LessonsService();
+        return sInstance;
+    }
 
     public List<Lesson> readLessons() {
         List<Lesson> lessons = HibernateHelper.selectEntities(SELECT_LESSONS, Lesson.class);
-
-        //TODO remove after investigating map entities between tables
-        for (Lesson lesson : lessons) {
-            addAuthor(lesson);
-        }
-
         return lessons;
     }
 
@@ -55,10 +48,12 @@ public class LessonsService {
     }
 
     private Lesson readLesson(Query query) {
-        return (Lesson) query.uniqueResult();
+        return (Lesson) query.getResultList().stream().findFirst().orElse(null);
     }
 
     public Lesson createLesson(Lesson lesson) {
+
+        lesson.setAuthor(HibernateHelper.getEntity(User.class, lesson.getAuthorId()));
         HibernateHelper.saveEntity(lesson);
 
         Query query = createQuery(SELECT_LESSON_BY_TITLE)
@@ -72,6 +67,7 @@ public class LessonsService {
     }
 
     public Lesson updateLesson(Lesson lesson) {
+        lesson.setAuthor(HibernateHelper.getEntity(User.class, lesson.getAuthorId()));
         updateEntity(lesson);
         return getEntity(Lesson.class, lesson.getId());
     }

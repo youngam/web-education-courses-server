@@ -1,6 +1,5 @@
 package hackspace.dev.servlets;
 
-import hackspace.dev.db.DbHelper;
 import hackspace.dev.pojo.Product;
 import hackspace.dev.pojo.User;
 
@@ -24,8 +23,6 @@ public class MainServlet extends HttpServlet {
                 new Product("testProduct3", 350),
                 new Product("testProduct4", 450),
                 new Product("testProduct5", 550));
-
-        List<User> users = DbHelper.getInstance().readUsers();
 
         request.getSession().setAttribute(PRODUCT, products);
         request.getRequestDispatcher("main.jsp").forward(request, response);

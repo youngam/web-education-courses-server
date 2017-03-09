@@ -2,11 +2,12 @@ package hackspace.dev.servlets;
 
 import com.google.gson.JsonElement;
 import hackspace.dev.api.ApiMethod;
-import hackspace.dev.error.ApiError;
+import hackspace.dev.error.ErrorFactory;
 import hackspace.dev.error.ErrorType;
 import hackspace.dev.pojo.BaseEntity;
 import hackspace.dev.pojo.Lesson;
 import hackspace.dev.pojo.RootRequest;
+import hackspace.dev.service.ILessonsProvider;
 import hackspace.dev.service.LessonsService;
 
 import javax.servlet.ServletException;
@@ -26,11 +27,11 @@ import static hackspace.dev.utils.ResponseHelper.writeResponse;
  */
 @WebServlet("/lessons")
 public class LessonsServlet extends BaseServlet {
-    private LessonsService lessonsService = new LessonsService();
+    private ILessonsProvider lessonsProvider = LessonsService.getInstance();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        writeResponse(toGson(lessonsService.readLessons()), resp);
+        writeResponse(toGson(lessonsProvider.readLessons()), resp);
     }
 
     @Override
@@ -56,28 +57,28 @@ public class LessonsServlet extends BaseServlet {
 
     private void updateLesson(JsonElement requestBody, HttpServletResponse resp) throws IOException {
         Lesson lesson = getGson().fromJson(requestBody, Lesson.class);
-        String response = buildOkResponse(lessonsService.updateLesson(lesson));
+        String response = buildOkResponse(lessonsProvider.updateLesson(lesson));
         writeResponse(response, resp);
     }
 
     private void deleteLesson(JsonElement requestBody, HttpServletResponse resp) throws IOException {
         Integer lessonId = requestBody.getAsJsonObject().get(BaseEntity.ID).getAsInt();
-        boolean successfulDeleted = lessonsService.deleteLesson(lessonId);
+        boolean successfulDeleted = lessonsProvider.deleteLesson(lessonId);
                                             // so lazy to create new object :(
         String response;
         if (successfulDeleted)  response = buildOkResponse(requestBody.toString());
-        else response = buildErrorResponse(new ApiError(ErrorType.CAN_NOT_DELETE_LESSON));
+        else response = buildErrorResponse(ErrorFactory.createError(ErrorType.CAN_NOT_DELETE_LESSON));
 
         writeResponse(response, resp);
     }
 
     private void createLesson(JsonElement requestBody, HttpServletResponse resp) throws IOException {
         Lesson lesson = getGson().fromJson(requestBody, Lesson.class);
-        boolean lessonTitleIsFree = lessonsService.lessonTitleFree(lesson.getTitle());
+        boolean lessonTitleIsFree = lessonsProvider.lessonTitleFree(lesson.getTitle());
 
         String response;
-        if(lessonTitleIsFree) response = buildOkResponse(lessonsService.createLesson(lesson));
-        else response = buildErrorResponse(new ApiError(ErrorType.LESSON_TITLE_ALREADY_EXISTS));
+        if(lessonTitleIsFree) response = buildOkResponse(lessonsProvider.createLesson(lesson));
+        else response = buildErrorResponse(ErrorFactory.createError(ErrorType.LESSON_TITLE_ALREADY_EXISTS));
 
         writeResponse(response, resp);
     }
